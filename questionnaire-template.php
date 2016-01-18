@@ -1,6 +1,4 @@
 <?php
-	require_once('includes/request-update.php');
-	require_once('includes/template-loader.php');
 	
 	$data = json_decode(get_option('json_data', '{}' ), true);
 		
