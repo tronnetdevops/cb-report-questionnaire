@@ -198,12 +198,24 @@
 			wp_enqueue_style( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/css/foundation.min.css' );
 			wp_enqueue_style( 'foundation-icons', 'http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' );
 			wp_enqueue_style( 'font-awesome', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
+			wp_enqueue_style( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css' );
+			wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css' );
+			wp_enqueue_style( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/introjs.min.css' );
+			wp_enqueue_style( 'cbquestionnaire-admin-css', plugins_url( '/styles/admin.css' , __FILE__ ) );
 		
+			
 			wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/js/foundation.min.js', array('jquery'), '6.0.1', true );
 			wp_enqueue_script( 'dataTables', 'http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js', array('jquery'), '1.10.7', true );
 			wp_enqueue_script( 'foundation-dataTables', 'http://cdn.datatables.net/plug-ins/1.10.7/integration/foundation/dataTables.foundation.js', array('foundation', 'dataTables'), '1.10.7', true );
 			wp_enqueue_script( 'select2', 'http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.js', array('foundation', 'dataTables'), '4.0.1', true );
+			wp_enqueue_script( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js', array('foundation'), '1.8.0', true );
+			wp_enqueue_script( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/intro.min.js', array('foundation'), '1.1.1', true );
+			wp_enqueue_script( 'sortable', 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js', array('foundation'), '1.4.2', true );
 			wp_enqueue_script( 'cbquestionnaire-admin-js', plugins_url( '/js/admin.js' , __FILE__ ) , array('jquery', 'foundation'), '1.0.0', true );
+			
+			wp_enqueue_media();
+			
+			$plugin_uri = plugins_url( '/' , __FILE__ );
 			
 			require_once( dirname( __FILE__ ) . '/templates/admin-panel.php');
 		}

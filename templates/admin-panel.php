@@ -1,5 +1,22 @@
 <?php
-	$defaultJSONData = json_encode(array(
+	$defaultData = array(
+		'config' => array(
+			'options' => array(
+				'highlight' => '#48D1CC',
+				'color' => '#CC0000'
+			),
+			'buttons' => array(
+				'shape' => 'rectangle',
+				'normal' => array(
+					'background' => '#FFFFFF',
+					'color' => '#000000'
+				),
+				'selected' => array(
+					'background' => '#48D1CC',
+					'color' => '#000000'
+				)
+			)
+		),
 		'results' => array(
 			array(
 				'text' => 'Address',
@@ -127,7 +144,7 @@
 			),
 			
 			array(
-				'id' => 3,
+				'id' => 2,
 				'name' => 'Insurance Providers',
 				'question' => 'Did you have health insurance from these providers?',
 				'type' => 'multiselect',
@@ -160,7 +177,7 @@
 			),
 			
 			array(
-				'id' => 4,
+				'id' => 3,
 				'name' => 'Credit at Retailers',
 				'question' => 'Did you use a credit or debit card at these retailers?',
 				'type' => 'multiselect',
@@ -246,18 +263,38 @@
 				)
 			)
 		)
-	));
+	);
+	
+	$defaultJSONData = json_encode( $defaultData );
+	
+	$dashboardJSONData = get_option('json_data', $defaultJSONData );
+	
+	$dashboardData = json_decode($dashboardJSONData, true);
 ?>
+	<style>
+		.rf-question-option-container{
+			background-color: <?php echo $dashboardData['config']['buttons']['normal']['background'] ?>;
+			color: <?php echo $dashboardData['config']['buttons']['normal']['color'] ?>;
+			
+		}
+		
+		.rf-question-option-container.selected{
+			background: <?php echo $dashboardData['config']['buttons']['selected']['background'] ?>;
+			color: <?php echo $dashboardData['config']['buttons']['selected']['color'] ?>;
+		}
+	</style>
 	<div class="wrap">
 		<h2>Credit Block Questionaire</h2>
 
 		<div class="row">
-			<div class="small-8 columns">
+			<div class="small-6 columns">
 				
 				<h4>Questions</h4>
 			</div>
-			<div class="small-4 columns">
+			<div class="small-6 columns rf-gt-main-control-buttons">
 				<button type="button" class="button right primary" onclick="javascript:rf.addQuestion();"><i class="fa fa-plus"></i> Add Question</button>
+				<button type="button" class="button right primary" onclick="javascript:rf.loadQuestionOrderModalData()" data-toggle="question-order-modal"><i class="fa fa-sort-amount-asc"></i> Question Order</button>
+				<button type="button" class="button right primary" data-toggle="settings-modal"><i class="fa fa-gears"></i> Manage Settings</button>
 			</div>
 		</div>
 		<div class="row">
@@ -265,6 +302,7 @@
 				<table class="rf-questionnaire-questions" style="width: 100%;">
 					<thead>
 						<tr>
+							<th width="5%">ID</th>
 							<th width="80%">Name</th>
 							<th>Actions</th>
 						</tr>
@@ -281,6 +319,117 @@
 		    
 			<?php submit_button(); ?>
 		</form>
+	</div>
+	
+	<div id="settings-modal" class="reveal" data-reveal>
+		<h2 class="title">General Settings</h2>
+		
+		<div class="row">
+			<div class="small-6 columns">
+				
+				<div class="row">
+					<div class="small-12 columns">
+						<strong>Unselected Button</strong>
+					</div>
+					<div class="small-6 columns">
+						<div class="type-field">
+							<label>Button Color
+								<input type="color" name="normal-button-color" id="rf-settings-normal-button-color" value="#FFFFFF">
+							</label>
+						</div>
+					</div>
+					<div class="small-6 columns">
+						<div class="type-field">
+							<label>Font Color
+								<input type="color" name="normal-button-font-color" id="rf-settings-normal-button-font-color" value="#000000">
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="small-6 columns">
+				<br/>
+				<div class="rf-question-option-container not-selected text-center">
+					<div class="rf-question-option-name">Option Name</div>
+					<div class="rf-question-option-description">description</div>
+				</div>
+			</div>
+		</div>
+		
+		<hr/>
+		
+		<div class="row">
+			<div class="small-6 columns">
+				<div class="row">
+					<div class="small-12 columns">
+						<strong>Selected Button</strong>
+					</div>
+					<div class="small-6 columns">
+						<div class="type-field">
+							<label>Button Color
+								<input type="color" name="selected-button-color" id="rf-settings-selected-button-color" value="#48D1CC">
+							</label>
+						</div>
+					</div>
+					<div class="small-6 columns">
+						<div class="type-field">
+							<label>Font Color
+								<input type="color" name="selected-button-font-color" id="rf-settings-selected-button-font-color" value="#000000">
+							</label>
+						</div>
+					</div>
+				</div>				
+			</div>
+			<div class="small-6 columns">
+				<br/>
+				<div class="rf-question-option-container selected text-center">
+					<div class="rf-question-option-name">Selected Option</div>
+					<div class="rf-question-option-description">selected</div>
+				</div>
+			</div>
+		</div>
+		
+		<hr/>
+		
+		<div class="row">
+			<div class="small-12 columns">
+				<div class="type-field">
+					<label>Button Shape
+						<select name="type" id="rf-settings-button-shape">
+							<option value="rectangle">Rectangle</option>
+							<option value="round">Rounded</option>
+						</select>
+					</label>
+				</div>
+			</div>
+		</div>		
+		
+		<hr/>
+		
+		<div class="row">
+			<div class="small-6 columns">
+				<div class="type-field">
+					<label>Option Highlight Color
+						<input type="color" name="option-highlight-color" id="rf-settings-selected-option-highlight-color" value="#48D1CC">
+					</label>
+				</div>
+			</div>
+			<div class="small-6 columns">
+				<div class="type-field">
+					<label>Option Highlight Font Color
+						<input type="color" name="option-highlight-font-color" id="rf-settings-selected-option-highlight-font-color" value="#CC0000">
+					</label>
+				</div>
+			</div>
+		</div>
+		
+
+		
+		<button class="button right" type="button" onclick="javascript: rf.saveSettings(this);"><i class="fa fa-save"></i> Submit</button>
+		
+		<button class="close-button" data-close aria-label="Close reveal" type="button">
+			<span aria-hidden="true">&times;</span>
+		</button>
 	</div>
 	
 	<div id="question-modal" class="reveal" data-reveal>
@@ -324,6 +473,20 @@
 			<span aria-hidden="true">&times;</span>
 		</button>
 	</div>
+
+	<div id="question-order-modal" class="reveal" data-reveal>
+		<h2 class="title">Question Order</h2>
+		<p class="lead">Drag and drop the questions in the specific order you would like them to appear.</p>
+
+		<div class="row" id="question-order-modal-questions-container"></div>
+		
+		
+		<button class="button right" type="button" onclick="javascript: rf.setQuestionOrder(this);" data-toggle="question-order-modal"><i class="fa fa-save"></i> Submit</button>
+		
+		<button class="close-button" data-close aria-label="Close reveal" type="button">
+			<span aria-hidden="true">&times;</span>
+		</button>
+	</div>
 	
 	<div id="question-modal-delete" class="reveal" data-reveal>
 		<h2 class="title">Delete Question</h2>
@@ -350,5 +513,10 @@
 	</div>
 
 	<script>
-		window.rf = {"data": JSON.parse('<?php echo addslashes( /* $defaultJSONData; */ get_option('json_data', $defaultJSONData ) ); ?>')};
+		window.rf = {
+			"settings": {
+				"videoURI": "<?php echo $plugin_uri; ?>"
+			},
+			"data": JSON.parse('<?php echo addslashes( $dashboardJSONData ); ?>')
+		};
 	</script>

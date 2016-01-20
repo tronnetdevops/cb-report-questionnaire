@@ -3,7 +3,31 @@
 	$data = json_decode(get_option('json_data', '{}' ), true);
 		
 	get_header();
+	
 ?>
+
+	<style>
+		.rf-question-option-container{
+			background-color: <?php echo $data['config']['buttons']['normal']['background'] ?>;
+			color: <?php echo $data['config']['buttons']['normal']['color'] ?>;
+			
+		}
+		
+		.rf-question-option-container.selected{
+			background: <?php echo $data['config']['buttons']['selected']['background'] ?>;
+			color: <?php echo $data['config']['buttons']['selected']['color'] ?>;
+		}
+		
+		.rf-option.hit{
+		    background-color: <?php echo $data['config']['options']['highlight'] ?>;
+		}
+		
+
+		.rf-option.has-points{
+			color: <?php echo $data['config']['options']['color'] ?>;
+		}
+	</style>
+	
 	<div class="top-bar hide">
 		<div class="row">
 			<div class="top-bar-left">
@@ -74,8 +98,12 @@
 					<div class="row small-up-1 medium-up-2 large-up-4">
 						<?php foreach($question['options'] as $questionOption) : ?>
 						<div class="column">
-							<div class="rf-question-option-container text-center" data-results="<?php echo implode(",", $questionOption['results']); ?>">
+							<div class="rf-question-option-container text-center <?php echo $data['config']['buttons']['shape']; ?>" data-results="<?php echo implode(",", $questionOption['results']); ?>">
+								<?php if (!empty($questionOption['image'])) : ?>
+								<img src="<?php echo $questionOption['image']; ?>" class="rf-option-image-display"/>
+								<?php else : ?>
 								<div class="rf-question-option-name"><?php echo $questionOption['name']; ?></div>
+								<?php endif; ?>
 								<?php if (!empty($questionOption['description'])) : ?>
 								<div class="rf-question-option-description"><?php echo $questionOption['description']; ?></div>
 								<?php endif; ?>
