@@ -91,32 +91,51 @@
 		</div>
 		
 		<div class="large-9 columns">
-			<?php foreach($data['questions'] as $question) : ?>
-				<div class="rf-question-container" data-type="<?php echo $question['type']; ?>">
-					<div class="row rf-question-text-container">
-						<div class="small-12 columns">
-							<h5 class="rf-question-text"><?php echo $question['question']; ?></h5>
-						</div>
-					</div>
-					<div class="row small-up-1 medium-up-2 large-up-4">
-						<?php foreach($question['options'] as $questionOption) : ?>
-						<div class="column">
-							<div class="rf-question-option-container text-center <?php echo $data['config']['buttons']['shape']; ?>" data-results="<?php echo implode(",", $questionOption['results']); ?>">
-								<?php if (!empty($questionOption['image'])) : ?>
-								<img src="<?php echo $questionOption['image']; ?>" class="rf-option-image-display"/>
-								<?php else : ?>
-								<div class="rf-question-option-name"><?php echo $questionOption['name']; ?></div>
-								<?php endif; ?>
-								<?php if (!empty($questionOption['description'])) : ?>
-								<div class="rf-question-option-description"><?php echo $questionOption['description']; ?></div>
-								<?php endif; ?>
+			<div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit data-auto-play="false" data-use-m-u-i="false">
+				<ul class="orbit-container">
+					<button class="orbit-previous"><span class="show-for-sr">Previous Slide</span>&#9664;&#xFE0E;</button>
+					<button class="orbit-next"><span class="show-for-sr">Next Slide</span>&#9654;&#xFE0E;</button>
+					<?php foreach($data['questions'] as $question) : ?>
+					<li class="is-active orbit-slide">
+						<div class="rf-question-container" data-type="<?php echo $question['type']; ?>">
+							<div class="row rf-question-text-container">
+								<div class="small-12 columns">
+									<h5 class="rf-question-text"><?php echo $question['question']; ?></h5>
+								</div>
+							</div>
+							<div class="row small-up-1 medium-up-2 large-up-4">
+								<?php foreach($question['options'] as $questionOption) : ?>
+								<div class="column">
+									<div class="rf-question-option-container text-center <?php echo $data['config']['buttons']['shape']; ?>" data-results="<?php echo implode(",", $questionOption['results']); ?>">
+										<?php if (!empty($questionOption['image'])) : ?>
+										<img src="<?php echo $questionOption['image']; ?>" class="rf-option-image-display"/>
+										<?php else : ?>
+										<div class="rf-question-option-name"><?php echo $questionOption['name']; ?></div>
+										<?php endif; ?>
+										<?php if (!empty($questionOption['description'])) : ?>
+										<div class="rf-question-option-description"><?php echo $questionOption['description']; ?></div>
+										<?php endif; ?>
+									</div>
+								</div>
+								<?php endforeach; ?>
 							</div>
 						</div>
-						<?php endforeach; ?>
-					</div>
-				</div>
-			<?php endforeach; ?>
+					</li>
+					<?php endforeach; ?>
+			  </ul>
+			  <nav class="orbit-bullets">
+			    <button class="is-active" data-slide="0"><span class="show-for-sr">First slide details.</span><span class="show-for-sr">Current Slide</span></button>
+			    <button data-slide="1"><span class="show-for-sr">Second slide details.</span></button>
+			    <button data-slide="2"><span class="show-for-sr">Third slide details.</span></button>
+			    <button data-slide="3"><span class="show-for-sr">Fourth slide details.</span></button>
+			  </nav>
+			</div>
 			
+			<div class="row">
+				<div class="large-12 columns">
+					<?php echo nl2br($bottomText); ?>
+				</div>
+			</div>
 		</div>
 	</div>
 

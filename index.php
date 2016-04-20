@@ -73,12 +73,12 @@
 		 */
 		function load_scripts() {
 			if (is_singular('cb_questionnaire')){
-				wp_enqueue_style( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/css/foundation.min.css' );
+				wp_enqueue_style( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.1/foundation.min.css' );
 				wp_enqueue_style( 'foundation-icons', 'http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' );
 				wp_enqueue_style( 'font-awesome', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
 				wp_enqueue_style( 'cbquestionnaire-main-css', plugins_url( '/styles/main.css' , __FILE__ ) );
 			
-				wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/js/foundation.min.js', array('jquery'), '6.0.1', true );
+				wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.1/foundation.min.js', array('jquery'), '6.2.1', true );
 				wp_enqueue_script( 'dataTables', 'http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js', array('jquery'), '1.10.7', true );
 				wp_enqueue_script( 'foundation-dataTables', 'http://cdn.datatables.net/plug-ins/1.10.7/integration/foundation/dataTables.foundation.js', array('foundation', 'dataTables'), '1.10.7', true );
 				wp_enqueue_script( 'cbquestionnaire-main-js', plugins_url( '/js/main.js' , __FILE__ ) , array('jquery', 'foundation'), '1.0.0', true );
@@ -95,9 +95,70 @@
 					'public' => true,
 					// 'has_archive' => true,
 					'rewrite' => array('slug' => 'questionnaires'),
+					'register_meta_box_cb' => array('CBQuestionnaire', 'add_questionnaire_metaboxes')
 				)
 		    );
 		}
+		
+		public function add_questionnaire_metaboxes() {
+			add_meta_box('cb_questionnaire_select_type', 'Select Questionnaire', array('CBQuestionnaire', 'cb_questionnaire_select_type'), 'cb_questionnaire', 'side', 'default');
+      add_meta_box('cb_questionnaire_bottom_text', 'Bottom of Page Text',  array('CBQuestionnaire', 'cb_questionnaire_bottom_text'));
+		}
+		
+		public function cb_questionnaire_select_type() {
+	    global $post;
+			
+	    $questionnaire = get_post_meta($post->ID, '_questionnaire_type', true);
+			
+	    echo '<input type="hidden" name="questionnaire_type_meta_noncename" id="questionnaire_type_meta_noncename" value="' . wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
+			
+	    echo '<select name="_questionnaire_type" class="widefat">';
+			echo '<option value="none">Please Select</option>';
+			echo '<option value="primary-questionnaire">Primary</option>';
+			echo '</select>';
+		}
+		
+		public function cb_questionnaire_bottom_text(){
+			global $post;
+
+			$text = get_post_meta($post->ID, '_questionnaire_bottom_text' , true );
+
+			wp_editor( htmlspecialchars_decode($text), '_questionnaire_bottom_text', $settings = array('textarea_name'=>'_questionnaire_bottom_text') );
+		}
+	
+		function cb_questionnaire_save_type_meta($post_id, $post) {
+	
+			// verify this came from the our screen and with proper authorization,
+			// because save_post can be triggered at other times
+			if ( !wp_verify_nonce( $_POST['questionnaire_type_meta_noncename'], plugin_basename(__FILE__) )) {
+				return $post->ID;
+			}
+
+			// Is the user allowed to edit the post or page?
+			if ( !current_user_can( 'edit_post', $post->ID ))
+				return $post->ID;
+
+			// OK, we're authenticated: we need to find and save the data
+			// We'll put it into an array to make it easier to loop though.
+	
+			$events_meta['_questionnaire_type'] = $_POST['_questionnaire_type'];
+			$events_meta['_questionnaire_bottom_text'] = $_POST['_questionnaire_bottom_text'];
+	
+			// Add values of $events_meta as custom fields
+	
+			foreach ($events_meta as $key => $value) { // Cycle through the $events_meta array!
+				if( $post->post_type == 'revision' ) return; // Don't store custom data twice
+				$value = implode(',', (array)$value); // If $value is an array, make it a CSV (unlikely)
+				if(get_post_meta($post->ID, $key, FALSE)) { // If the custom field already has a value
+					update_post_meta($post->ID, $key, $value);
+				} else { // If the custom field doesn't have a value
+					add_post_meta($post->ID, $key, $value);
+				}
+				if(!$value) delete_post_meta($post->ID, $key); // Delete if blank
+			}
+
+		}
+		
 		
 		public function myplugin_activate() {
 			
@@ -221,13 +282,15 @@
 		}
 		
 	} 
-	add_action( 'plugins_loaded', array( 'CBQuestionnaire', 'get_instance' ) );
+	add_action('plugins_loaded', array( 'CBQuestionnaire', 'get_instance' ) );
 	add_action('admin_menu', array( 'CBQuestionnaire', 'cb_questionnaire_create_menu' ) );
+	add_action('save_post', array('CBQuestionnaire', 'cb_questionnaire_save_type_meta'), 1, 2);
 	
 	
-    register_activation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_activate' ) );
-    register_deactivation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_deactivate' ) );
+	register_activation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_activate' ) );
+	register_deactivation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_deactivate' ) );
 	
-	add_action( 'init', array( 'CBQuestionnaire', 'create_posttype' ) );
-	add_action( 'wp_enqueue_scripts', array( 'CBQuestionnaire', 'load_scripts' ), 999 );
+	add_action('init', array( 'CBQuestionnaire', 'create_posttype' ) );
+	add_action('wp_enqueue_scripts', array( 'CBQuestionnaire', 'load_scripts' ), 999 );
+	
 	

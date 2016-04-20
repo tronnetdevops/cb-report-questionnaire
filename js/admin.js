@@ -400,6 +400,8 @@
 			
 			return true;
 		},
+		
+		"intro": introJs(),
 		"runGuidedTour": function(){
 			var intro = introJs();
 			intro.setOptions({

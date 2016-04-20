@@ -315,7 +315,7 @@
 		<form method="post" action="options.php">
 		    <?php settings_fields( 'cb-questionnaire-settings-group' ); ?>
 		    <?php do_settings_sections( 'cb-questionnaire-settings-group' ); ?>
-			<input type="hidden" name="json_data" value="<?php echo esc_attr($defaultJSONData /* get_option('json_data', $defaultJSONData ) */ ); ?>" />
+			<input type="hidden" name="json_data" value="<?php echo esc_attr( get_option('json_data', $defaultJSONData ) ); ?>" />
 		    
 			<?php submit_button(); ?>
 		</form>
@@ -378,7 +378,7 @@
 							</label>
 						</div>
 					</div>
-				</div>				
+				</div>
 			</div>
 			<div class="small-6 columns">
 				<br/>
