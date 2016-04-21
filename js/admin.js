@@ -42,7 +42,7 @@
 	
 			rf.data.questions[ data.id ] = data;
 	
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
 	
 			$("#question-modal").foundation("close");
 				
@@ -67,7 +67,7 @@
 				rf.addQuestion(qdata);
 			}
 		
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
 		
 			$("#question-modal-delete").foundation("close");
 		
@@ -89,7 +89,7 @@
 			$parent.siblings().first().text(optionName);
 	
 			$parent.children().remove();
-			$parent.append( $('<a href="#" data-toggle="question-modal-delete" class="question-'+data.id+'" onclick="javascript:rf.loadDeleteModalData(this)"><i class="fa fa-trash"></i> Delete</a>') );
+			$parent.append( $('<a href="javascript:void(0);" data-toggle="question-modal-delete" class="question-'+data.id+'" onclick="javascript:rf.loadDeleteModalData(this)"><i class="fa fa-trash"></i> Delete</a>') );
 	
 			return true;
 		},
@@ -137,8 +137,8 @@
 	
 			dt.row.add([
 				'<div class="question-id-container-'+data.id+'" data-pos="'+data.id+'">'+data.id+'</div>', 
-				'<a href="#" data-toggle="question-modal" class="question-'+data.id+' question-data-container" onclick="javascript:rf.loadEditModalData(this)">'+data.name+'</a>', 
-				'<a href="#" data-toggle="question-modal-delete" class="question-control-delete-'+data.id+'" onclick="javascript:rf.loadDeleteModalData(this)"><i class="fa fa-trash"></i> Delete</a>'
+				'<a href="javascript:void(0);" data-toggle="question-modal" class="question-'+data.id+' question-data-container" onclick="javascript:rf.loadEditModalData(this)">'+data.name+'</a>', 
+				'<a href="javascript:void(0);" data-toggle="question-modal-delete" class="question-control-delete-'+data.id+'" onclick="javascript:rf.loadDeleteModalData(this)"><i class="fa fa-trash"></i> Delete</a>'
 			]).draw(false);
 	
 			$rftable.find(".question-"+data.id).data("qdata", data);
@@ -149,7 +149,7 @@
 		"questionOptionBuilder": function(data){
 			var id = $(".accordion-item").length;
 			var $optionTemplate = $('<li class="accordion-item">'
-				+'<a href="#question-option-'+id+'" onclick="javascript:rf.toggleTab(this)" role="tab" class="accordion-title" id="question-option-'+id+'-heading" aria-controls="question-option-'+id+'"></a>'
+				+'<a href="javascript:void(0);" onclick="javascript:rf.toggleTab(this)" role="tab" class="accordion-title" id="question-option-'+id+'-heading" aria-controls="question-option-'+id+'"></a>'
 				+'<div id="question-option-'+id+'" class="accordion-content" data-option="'+id+'" role="tabpanel" data-tab-content aria-labelledby="question-option-'+id+'-heading">'
 					+'<div class="row">'
 						+'<div class="question-option-field">'
@@ -352,7 +352,7 @@
 			
 			rf.data.questions = orderedQuestions;
 			
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
 
 			dt.clear().draw();
 			
@@ -394,28 +394,11 @@
 			window.rf.data.config.options.highlight = $("#rf-settings-selected-option-highlight-color").val();
 			window.rf.data.config.options.color = $("#rf-settings-selected-option-highlight-font-color").val();
 			
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
 			
 			$("#settings-modal").foundation("close");
 			
 			return true;
-		},
-		
-		"intro": introJs(),
-		"runGuidedTour": function(){
-			var intro = introJs();
-			intro.setOptions({
-				"steps": [
-					{
-						"element": ".rf-gt-main-control-buttons",
-						"intro": ''
-						
-						// "position": "right"
-					}
-				]
-			});
-
-			intro.start();
 		}
 	});
 

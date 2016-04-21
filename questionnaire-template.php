@@ -1,7 +1,7 @@
 <?php
 	global $post;
 	
-	$data = json_decode(get_option('json_data', '{}' ), true);
+  $data = json_decode(get_post_meta($post->ID, '_questionnaire_json_data', true));
 		
 	$bottomText = get_post_meta($post->ID, '_questionnaire_bottom_text' , true );	
 		

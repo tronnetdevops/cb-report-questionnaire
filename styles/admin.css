@@ -31,3 +31,15 @@
 .rf-question-option-description{
 	font-size: 12px;
 }
+
+#adminmenuwrap ul{
+		margin-left: inherit;
+}
+
+#adminmenuwrap ul li{
+		margin-left: inherit;
+}
+
+body{
+	background: none;
+}

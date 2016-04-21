@@ -102,7 +102,10 @@
 		
 		public function add_questionnaire_metaboxes() {
 			add_meta_box('cb_questionnaire_select_type', 'Select Questionnaire', array('CBQuestionnaire', 'cb_questionnaire_select_type'), 'cb_questionnaire', 'side', 'default');
-      add_meta_box('cb_questionnaire_bottom_text', 'Bottom of Page Text',  array('CBQuestionnaire', 'cb_questionnaire_bottom_text'));
+			
+			add_meta_box('cb_questionnaire_json_data', 'Questions',  array('CBQuestionnaire', 'cb_questionnaire_questions'));
+			
+			add_meta_box('cb_questionnaire_bottom_text', 'Bottom of Page Text',  array('CBQuestionnaire', 'cb_questionnaire_bottom_text'));
 		}
 		
 		public function cb_questionnaire_select_type() {
@@ -116,6 +119,10 @@
 			echo '<option value="none">Please Select</option>';
 			echo '<option value="primary-questionnaire">Primary</option>';
 			echo '</select>';
+		}
+		
+		public function cb_questionnaire_questions(){
+			include('templates/admin-panel.php');
 		}
 		
 		public function cb_questionnaire_bottom_text(){
@@ -143,6 +150,7 @@
 	
 			$events_meta['_questionnaire_type'] = $_POST['_questionnaire_type'];
 			$events_meta['_questionnaire_bottom_text'] = $_POST['_questionnaire_bottom_text'];
+			$events_meta['_questionnaire_json_data'] = $_POST['_questionnaire_json_data'];
 	
 			// Add values of $events_meta as custom fields
 	
@@ -173,7 +181,7 @@
 			
 			$new_post_id = wp_insert_post( $post ); // creates page
 			
-			update_post_meta( $new_post_id, '_wp_page_template', 'questionnaire-template.php' );
+			update_post_meta( $new_post_id, '_cb_page_template', 'questionnaire-template.php' );
 		}
 		
 		public function myplugin_deactivate() {
@@ -216,14 +224,14 @@
 		public function view_project_template( $template ) {
 			global $post;
 			if (!isset($this->templates[get_post_meta( 
-						$post->ID, '_wp_page_template', true 
+						$post->ID, '_cb_page_template', true 
 					)] ) ) {
 					
 				return $template;
 						
 			} 
 			$file = plugin_dir_path(__FILE__). get_post_meta( 
-						$post->ID, '_wp_page_template', true 
+						$post->ID, '_cb_page_template', true 
 					);
 				
 			// Just to be safe, we check if the file exist first
@@ -242,11 +250,15 @@
 
 		function cb_questionnaire_create_menu() {
 
-			//create new top-level menu
-			add_menu_page('Questionaire Settings', 'Questionaire', 'administrator', __FILE__, array( 'CBQuestionnaire', 'cb_questionnaire_settings_page' ) );
-
-			//call register settings function
-			add_action( 'admin_init', array( 'CBQuestionnaire', 'register_cb_questionnaire_settings' ) );
+			// //create new top-level menu
+			// add_menu_page('Questionaire Settings', 'Questionaire', 'administrator', __FILE__, array( 'CBQuestionnaire', 'cb_questionnaire_settings_page' ) );
+			//
+			// //call register settings function
+			// add_action( 'admin_init', array( 'CBQuestionnaire', 'register_cb_questionnaire_settings' ) );
+			
+			add_action('admin_print_scripts-post-new.php', array( 'CBQuestionnaire', 'cb_questionnaire_settings_page' ), 11);
+			add_action('admin_print_scripts-post.php', array( 'CBQuestionnaire', 'cb_questionnaire_settings_page' ), 11);
+	
 		}
 
 
@@ -256,29 +268,32 @@
 		}
 
 		function cb_questionnaire_settings_page() {
-			wp_enqueue_style( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/css/foundation.min.css' );
-			wp_enqueue_style( 'foundation-icons', 'http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' );
-			wp_enqueue_style( 'font-awesome', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
-			wp_enqueue_style( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css' );
-			wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css' );
-			wp_enqueue_style( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/introjs.min.css' );
-			wp_enqueue_style( 'cbquestionnaire-admin-css', plugins_url( '/styles/admin.css' , __FILE__ ) );
+	    global $post_type;
+	    if ($post_type == 'cb_questionnaire'){
+	    	
+				// wp_enqueue_style( 'foundation',  plugins_url( '/styles/foundation.admin.css' , __FILE__ ) );
+				wp_enqueue_style( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/css/foundation.min.css' );
+				wp_enqueue_style( 'foundation-icons', 'http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' );
+				wp_enqueue_style( 'font-awesome', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
+				wp_enqueue_style( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css' );
+				wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css' );
+				// wp_enqueue_style( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/introjs.min.css' );
+				wp_enqueue_style( 'cbquestionnaire-admin-css', plugins_url( '/styles/admin.css' , __FILE__ ) );
 		
 			
-			wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/js/foundation.min.js', array('jquery'), '6.0.1', true );
-			wp_enqueue_script( 'dataTables', 'http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js', array('jquery'), '1.10.7', true );
-			wp_enqueue_script( 'foundation-dataTables', 'http://cdn.datatables.net/plug-ins/1.10.7/integration/foundation/dataTables.foundation.js', array('foundation', 'dataTables'), '1.10.7', true );
-			wp_enqueue_script( 'select2', 'http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.js', array('foundation', 'dataTables'), '4.0.1', true );
-			wp_enqueue_script( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js', array('foundation'), '1.8.0', true );
-			wp_enqueue_script( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/intro.min.js', array('foundation'), '1.1.1', true );
-			wp_enqueue_script( 'sortable', 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js', array('foundation'), '1.4.2', true );
-			wp_enqueue_script( 'cbquestionnaire-admin-js', plugins_url( '/js/admin.js' , __FILE__ ) , array('jquery', 'foundation'), '1.0.0', true );
+				wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/js/foundation.min.js', array('jquery'), '6.0.1', true );
+				wp_enqueue_script( 'dataTables', 'http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js', array('jquery'), '1.10.7', true );
+				wp_enqueue_script( 'foundation-dataTables', 'http://cdn.datatables.net/plug-ins/1.10.7/integration/foundation/dataTables.foundation.js', array('foundation', 'dataTables'), '1.10.7', true );
+				wp_enqueue_script( 'select2', 'http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.js', array('foundation', 'dataTables'), '4.0.1', true );
+				wp_enqueue_script( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js', array('foundation'), '1.8.0', true );
+				// wp_enqueue_script( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/intro.min.js', array('foundation'), '1.1.1', true );
+				wp_enqueue_script( 'sortable', 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js', array('foundation'), '1.4.2', true );
+				wp_enqueue_script( 'cbquestionnaire-admin-js', plugins_url( '/js/admin.js' , __FILE__ ) , array('jquery', 'foundation'), '1.0.0', true );
 			
-			wp_enqueue_media();
+				wp_enqueue_media();
+			}
 			
-			$plugin_uri = plugins_url( '/' , __FILE__ );
-			
-			require_once( dirname( __FILE__ ) . '/templates/admin-panel.php');
+			// require_once( dirname( __FILE__ ) . '/templates/admin-panel.php');
 		}
 		
 	} 
@@ -293,4 +308,5 @@
 	add_action('init', array( 'CBQuestionnaire', 'create_posttype' ) );
 	add_action('wp_enqueue_scripts', array( 'CBQuestionnaire', 'load_scripts' ), 999 );
 	
+
 	
