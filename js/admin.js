@@ -2,6 +2,100 @@
 	"use strict";
 	
 	$.extend(window.rf, {
+		"questionnaire": null,
+		
+		"buildQuestionnairesSelector": function(){
+			var $questionnaireSelector = $("#questionnaire-select");
+			
+			$questionnaireSelector.children().remove();
+			
+			if (rf.data.questionnaires.length){
+				for(var questionnaireID in rf.data.questionnaires){
+					var questionnaire = rf.data.questionnaires[questionnaireID];
+					$questionnaireSelector.append(
+						$('<option value="'+questionnaireID+'">'+questionnaire.name+'</option>')
+					);
+				}
+			
+				$questionnaireSelector.val( rf.data.questionnaires.length - 1 );
+				
+				rf.editQuestionnaire();
+			}
+		},
+		
+		"editQuestionnaire": function(){
+			var selected = $("#questionnaire-select").val();
+			
+			rf.questionnaire = rf.data.questionnaires[ selected ];
+			
+			rf.loadQuestionnaire();
+		},
+		
+		"createQuestionnaire": function(){
+			$("#questionnaire-name").val("");
+			$("#questionnaire-type").val("");
+			$("#question-option-modal-delete").foundation("open");
+		},
+		
+		"loadQuestionnaire": function(){
+			var questionnaire = rf.questionnaire;
+			var $container = $(".rf-questionnaire-container");
+			var $rftable = $(".rf-questionnaire-questions");
+			var dt = $rftable.DataTable();
+			
+			dt.clear().draw();
+			
+			$container.fadeOut(function(){
+				if (questionnaire){
+					for(var id in questionnaire.questions){
+						var qdata = questionnaire.questions[id];
+						rf.addQuestion(qdata);
+					}
+				
+					$(".rf-question-option-container.selected").css({
+						"backgroundColor": questionnaire.config.buttons.selected.background,
+						"color": questionnaire.config.buttons.selected.color
+					});
+				
+					$(".rf-question-option-container.not-selected").css({
+						"backgroundColor": questionnaire.config.buttons.normal.background,
+						"color": questionnaire.config.buttons.normal.color
+					});
+				
+					$("#rf-settings-normal-button-color").val(questionnaire.config.buttons.normal.background);
+					$("#rf-settings-normal-button-font-color").val(questionnaire.config.buttons.normal.color);
+					$("#rf-settings-selected-button-color").val(questionnaire.config.buttons.selected.background);
+					$("#rf-settings-selected-button-font-color").val(questionnaire.config.buttons.selected.color);
+					$("#rf-settings-button-shape").val(questionnaire.config.buttons.shape);
+					$("#rf-settings-selected-option-highlight-color").val(questionnaire.config.options.highlight);
+					$("#rf-settings-selected-option-highlight-font-color").val(questionnaire.config.options.color);
+	
+					$("#rf-settings-normal-button-color").on('change.spectrum', function(e, tinycolor) {
+						$(".rf-question-option-container.not-selected").css("background", $(this).val());
+					});
+	
+					$("#rf-settings-selected-button-color").on('change.spectrum', function(e, tinycolor) {
+						$(".rf-question-option-container.selected").css("background", $(this).val());
+					});
+	
+	
+					$("#rf-settings-normal-button-font-color").on('change.spectrum', function(e, tinycolor) {
+						$(".rf-question-option-container.not-selected").css("color", $(this).val());
+					});
+	
+					$("#rf-settings-selected-button-font-color").on('change.spectrum', function(e, tinycolor) {
+						$(".rf-question-option-container.selected").css("color", $(this).val());
+					});
+	
+					$("#rf-settings-button-shape").on("change", function(){
+						$(".rf-question-option-container").removeClass("round").addClass( $(this).val() );
+					});
+				
+					$container.fadeIn();
+				}
+			});
+		},
+		
 		"questionBuilder": function(e){
 			var $modalTemplate = $("#question-modal");
 			var $ele = $modalTemplate.data("modalRefEle");
@@ -40,9 +134,9 @@
 	
 			$ele.attr("qdata", data).text( data.name );
 	
-			rf.data.questions[ data.id ] = data;
+			rf.questionnaire.questions[ data.id ] = data;
 	
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-json-data").val( JSON.stringify(rf.data) );
 	
 			$("#question-modal").foundation("close");
 				
@@ -55,19 +149,19 @@
 			var $rftable = $(".rf-questionnaire-questions");
 			var dt = $rftable.DataTable();
 		
-			delete rf.data.questions[ data.id ];
+			delete rf.questionnaire.questions[ data.id ];
 		
 			var i=0;
-			rf.data.questions = rf.data.questions.filter(function(v){ v.id = i++; return v; });
+			rf.questionnaire.questions = rf.questionnaire.questions.filter(function(v){ v.id = i++; return v; });
 	
 			dt.clear().draw();
 		
-			for(var id in rf.data.questions){
-				var qdata = rf.data.questions[id];
+			for(var id in rf.questionnaire.questions){
+				var qdata = rf.questionnaire.questions[id];
 				rf.addQuestion(qdata);
 			}
 		
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-json-data").val( JSON.stringify(rf.data) );
 		
 			$("#question-modal-delete").foundation("close");
 		
@@ -211,8 +305,8 @@
 	
 			var selectData = [];
 	
-			for(var pos in rf.data.results){
-				var option = $.extend({}, rf.data.results[+pos]);
+			for(var pos in rf.questionnaire.results){
+				var option = $.extend({}, rf.questionnaire.results[+pos]);
 		
 				if (data.results.indexOf( +pos ) !== -1){
 					option.selected = true;
@@ -254,8 +348,8 @@
 				var selectedItems = $(e.target).val() || [];
 				var newItems = [];
 		
-				if (rf.data.results){
-					var dataValues = rf.data.results.map(function(v,i){ return v.text; });
+				if (rf.questionnaire.results){
+					var dataValues = rf.questionnaire.results.map(function(v,i){ return v.text; });
 				} else {
 					var dataValues = [];
 				}
@@ -272,7 +366,7 @@
 					}
 			
 					if (dataValues.indexOf( result ) === -1){
-						var newID = rf.data.results.length + newItems.length;
+						var newID = rf.questionnaire.results.length + newItems.length;
 						newItems.push({
 							"text": result,
 							"id": newID
@@ -282,13 +376,13 @@
 					}
 				}
 		
-				$.merge(rf.data.results, newItems);
+				$.merge(rf.questionnaire.results, newItems);
 		
 				/**
 				 * Reapplying the ID may cause issues...
 				 */
-				for(var pos in rf.data.results){
-					rf.data.results[ pos ].id = pos;
+				for(var pos in rf.questionnaire.results){
+					rf.questionnaire.results[ pos ].id = pos;
 				}
 		
 			});
@@ -328,7 +422,7 @@
 		"loadQuestionOrderModalData": function(){
 			var $modalTemplate = $("#question-order-modal");
 			var $questionContainer = $modalTemplate.find("#question-order-modal-questions-container");
-			var $questionsDOM = rf.data.questions.map(function(question){
+			var $questionsDOM = rf.questionnaire.questions.map(function(question){
 				return '<div class="small-12 columns callout rf-question-order-question-item" data-qpos="'+question.id+'">'+question.name+'</div>';
 			}).join('');
 			
@@ -345,19 +439,19 @@
 			var $questionContainer = $modalTemplate.find("#question-order-modal-questions-container");
 			var orderedQuestions = [];
 			var questionsIDsInOrder = $questionContainer.find(".rf-question-order-question-item").each(function(){
-				var question = rf.data.questions[ +$(this).data("qpos") ];
+				var question = rf.questionnaire.questions[ +$(this).data("qpos") ];
 				question['id'] = orderedQuestions.length;
 				orderedQuestions.push( question );
 			});
 			
-			rf.data.questions = orderedQuestions;
+			rf.questionnaire.questions = orderedQuestions;
 			
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-json-data").val( JSON.stringify(rf.data) );
 
 			dt.clear().draw();
 			
-			for(var id in rf.data.questions){
-				var qdata = rf.data.questions[id];
+			for(var id in rf.questionnaire.questions){
+				var qdata = rf.questionnaire.questions[id];
 				rf.addQuestion(qdata);
 			}
 			
@@ -386,15 +480,15 @@
 			return true;
 		},
 		"saveSettings": function(ele){
-			window.rf.data.config.buttons.normal.background = $("#rf-settings-normal-button-color").val();
-			window.rf.data.config.buttons.normal.color = $("#rf-settings-normal-button-font-color").val();
-			window.rf.data.config.buttons.selected.background = $("#rf-settings-selected-button-color").val();
-			window.rf.data.config.buttons.selected.color = $("#rf-settings-selected-button-font-color").val();
-			window.rf.data.config.buttons.shape = $("#rf-settings-button-shape").val();
-			window.rf.data.config.options.highlight = $("#rf-settings-selected-option-highlight-color").val();
-			window.rf.data.config.options.color = $("#rf-settings-selected-option-highlight-font-color").val();
+			window.rf.questionnaire.config.buttons.normal.background = $("#rf-settings-normal-button-color").val();
+			window.rf.questionnaire.config.buttons.normal.color = $("#rf-settings-normal-button-font-color").val();
+			window.rf.questionnaire.config.buttons.selected.background = $("#rf-settings-selected-button-color").val();
+			window.rf.questionnaire.config.buttons.selected.color = $("#rf-settings-selected-button-font-color").val();
+			window.rf.questionnaire.config.buttons.shape = $("#rf-settings-button-shape").val();
+			window.rf.questionnaire.config.options.highlight = $("#rf-settings-selected-option-highlight-color").val();
+			window.rf.questionnaire.config.options.color = $("#rf-settings-selected-option-highlight-font-color").val();
 			
-			$("input[name=json_data]").val( JSON.stringify(rf.data) );
+			$("#rf-json-data").val( JSON.stringify(rf.data) );
 			
 			$("#settings-modal").foundation("close");
 			
@@ -423,44 +517,15 @@
 
 	$(document).ready(function() {
 		var $rftable = $(".rf-questionnaire-questions");
-
+		var $container = $(".rf-questionnaire-container");
+		var $questionnaireSelector = $("#questionnaire-select");
+		
 		$rftable.dataTable();
- 
-		var dt = $rftable.DataTable();
-
-		for(var id in rf.data.questions){
-			var qdata = rf.data.questions[id];
-			rf.addQuestion(qdata);
-		}
+		
+		$container.fadeOut(function(){
+			$container.removeClass("hide");
+		});
+		
+		rf.buildQuestionnairesSelector();
 	});
-	
-	 $("#rf-settings-normal-button-color").val(window.rf.data.config.buttons.normal.background);
-	 $("#rf-settings-normal-button-font-color").val(window.rf.data.config.buttons.normal.color);
-	 $("#rf-settings-selected-button-color").val(window.rf.data.config.buttons.selected.background);
-	 $("#rf-settings-selected-button-font-color").val(window.rf.data.config.buttons.selected.color);
-	 $("#rf-settings-button-shape").val(window.rf.data.config.buttons.shape);
-	 $("#rf-settings-selected-option-highlight-color").val(window.rf.data.config.options.highlight);
-	 $("#rf-settings-selected-option-highlight-font-color").val(window.rf.data.config.options.color);
-	
-	$("#rf-settings-normal-button-color").on('change.spectrum', function(e, tinycolor) {
-		$(".rf-question-option-container.not-selected").css("background", $(this).val());
-	});
-	
-	$("#rf-settings-selected-button-color").on('change.spectrum', function(e, tinycolor) {
-		$(".rf-question-option-container.selected").css("background", $(this).val());
-	});
-	
-	
-	$("#rf-settings-normal-button-font-color").on('change.spectrum', function(e, tinycolor) {
-		$(".rf-question-option-container.not-selected").css("color", $(this).val());
-	});
-	
-	$("#rf-settings-selected-button-font-color").on('change.spectrum', function(e, tinycolor) {
-		$(".rf-question-option-container.selected").css("color", $(this).val());
-	});
-	
-	$("#rf-settings-button-shape").on("change", function(){
-		$(".rf-question-option-container").removeClass("round").addClass( $(this).val() );
-	});
-	
 })(window, jQuery);

@@ -11,6 +11,9 @@
 		 * A reference to an instance of this class.
 		 */
 		private static $instance;
+
+		public static $Templates;
+
 		/**
 		 * The array of templates that this plugin tracks.
 		 */
@@ -46,8 +49,9 @@
 						array( $this, 'view_project_template') 
 					);
 			// Add your templates to this array.
-			$this->templates = array(
-				'questionnaire-template.php'     => 'CB Questionnaire'
+			$this->templates = self::$Templates = array(
+				'questionnaire-template.php' => 'CB Questionnaire',
+				'questionnaire-multistep-template.php' => 'CB Questionnaire MultiStep'
 			);
 			
 
@@ -108,13 +112,15 @@
 		public function cb_questionnaire_select_type() {
 	    global $post;
 			
-	    $questionnaire = get_post_meta($post->ID, '_questionnaire_type', true);
+			$questionnaire = get_post_meta($post->ID, '_questionnaire_type', true);
 			
-	    echo '<input type="hidden" name="questionnaire_type_meta_noncename" id="questionnaire_type_meta_noncename" value="' . wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
+			echo '<input type="hidden" name="questionnaire_type_meta_noncename" id="questionnaire_type_meta_noncename" value="' . wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 			
-	    echo '<select name="_questionnaire_type" class="widefat">';
+			echo '<select name="_questionnaire_type" class="widefat">';
 			echo '<option value="none">Please Select</option>';
-			echo '<option value="primary-questionnaire">Primary</option>';
+			foreach (self::$Templates as $key=>$templateName){
+				echo '<option value="'.$key.'">"'.$templateName.'"</option>';
+			}
 			echo '</select>';
 		}
 		
@@ -173,7 +179,7 @@
 			
 			$new_post_id = wp_insert_post( $post ); // creates page
 			
-			update_post_meta( $new_post_id, '_wp_page_template', 'questionnaire-template.php' );
+			update_post_meta( $new_post_id, '_questionnaire_type', 'questionnaire-template.php' );
 		}
 		
 		public function myplugin_deactivate() {
@@ -195,11 +201,13 @@
 			// Create the key used for the themes cache
 			$cache_key = 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
 			// Retrieve the cache list. 
-					// If it doesn't exist, or it's empty prepare an array
-					$templates = wp_get_theme()->get_page_templates();
+			// If it doesn't exist, or it's empty prepare an array
+			$templates = wp_get_theme()->get_page_templates();
+			
 			if ( empty( $templates ) ) {
 				$templates = array();
 			} 
+
 			// New cache, therefore remove the old one
 			wp_cache_delete( $cache_key , 'themes');
 			// Now add our template to the list of templates by merging our templates
@@ -216,21 +224,24 @@
 		public function view_project_template( $template ) {
 			global $post;
 			if (!isset($this->templates[get_post_meta( 
-						$post->ID, '_wp_page_template', true 
+						$post->ID, '_questionnaire_type', true 
 					)] ) ) {
 					
 				return $template;
 						
 			} 
 			$file = plugin_dir_path(__FILE__). get_post_meta( 
-						$post->ID, '_wp_page_template', true 
-					);
+				$post->ID, '_questionnaire_type', true 
+			);
 				
 			// Just to be safe, we check if the file exist first
 			if( file_exists( $file ) ) {
 				return $file;
 			} 
-					else { echo $file; }
+			else { 
+				echo $file; 
+			}
+			
 			return $template;
 		}
 		
@@ -281,11 +292,11 @@
 			require_once( dirname( __FILE__ ) . '/templates/admin-panel.php');
 		}
 		
-	} 
+	}
+	
 	add_action('plugins_loaded', array( 'CBQuestionnaire', 'get_instance' ) );
 	add_action('admin_menu', array( 'CBQuestionnaire', 'cb_questionnaire_create_menu' ) );
 	add_action('save_post', array('CBQuestionnaire', 'cb_questionnaire_save_type_meta'), 1, 2);
-	
 	
 	register_activation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_activate' ) );
 	register_deactivation_hook( __FILE__, array( 'CBQuestionnaire', 'myplugin_deactivate' ) );
