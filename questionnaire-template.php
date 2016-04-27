@@ -1,10 +1,10 @@
 <?php
 	global $post;
 	
-  $data = json_decode(get_post_meta($post->ID, '_questionnaire_json_data', true));
+  $data = json_decode(get_post_meta($post->ID, '_questionnaire_json_data', true), true);
 		
 	$bottomText = get_post_meta($post->ID, '_questionnaire_bottom_text' , true );	
-		
+	
 	get_header();
 	
 ?>
@@ -117,6 +117,12 @@
 				</div>
 			<?php endforeach; ?>
 			
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-12 columns">
+			<?php echo nl2br($bottomText); ?>
 		</div>
 	</div>
 

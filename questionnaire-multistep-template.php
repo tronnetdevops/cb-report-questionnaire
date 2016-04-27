@@ -1,10 +1,25 @@
 <?php
 	global $post;
 	
-  $data = json_decode(get_post_meta($post->ID, '_questionnaire_json_data', true));
+  $data = json_decode(get_post_meta($post->ID, '_questionnaire_json_data', true), true);
 		
-	$bottomText = get_post_meta($post->ID, '_questionnaire_bottom_text' , true );	
+	$bottomText = get_post_meta($post->ID, '_questionnaire_bottom_text' , true );
+	
+	foreach($data['categories'] as $category){
+		$categories[ $category['text'] ] = array(
+			'id' => $category['id'],
+			'name' => $category['text'],
+			'questions' => array()
+		);
 		
+		foreach($data['questions'] as $question){
+			if (in_array( $category['id'], $question['categories'] )){
+				$categories[ $category['text'] ]['questions'][] = $question;
+			}
+		}
+		
+	}
+	
 	get_header();
 	
 ?>
@@ -52,7 +67,7 @@
 			</div>
 		</div>
 	</div>
- 
+	
 	<br/>
 	
 	<div class="row">
@@ -92,12 +107,33 @@
 		
 		<div class="large-9 columns">
 			<div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit data-auto-play="false" data-use-m-u-i="false">
-				<ul class="orbit-container">
+				<ul class="orbit-container" style="padding-left: 3em;padding-right: 3em;">
 					<button class="orbit-previous"><span class="show-for-sr">Previous Slide</span>&#9664;&#xFE0E;</button>
 					<button class="orbit-next"><span class="show-for-sr">Next Slide</span>&#9654;&#xFE0E;</button>
-					<?php foreach($data['questions'] as $question) : ?>
+					<?php
+						$index = 1;
+						foreach($categories as $category) :
+							$progress = intval(100 / (count($categories) ) * $index++ );
+						?>
 					<li class="is-active orbit-slide">
 						<div class="rf-question-container" data-type="<?php echo $question['type']; ?>">
+							<div class="row">
+								<div class="small-12">
+									<div class="progress" role="progressbar" tabindex="0" aria-valuenow="<?php echo $progress; ?>" aria-valuemin="0" aria-valuetext="<?php echo $progress; ?> percent" aria-valuemax="100">
+									  <div class="progress-meter" style="width: <?php echo $progress; ?>%"></div>
+									</div>
+								</div>
+							</div>
+							
+							<div class="row rf-question-text-container">
+								<div class="small-12 columns">
+									<h3><?php echo $category['name']; ?></h3>
+								</div>
+							</div>
+							
+							<?php
+								foreach($category['questions'] as $question) : 
+								?>
 							<div class="row rf-question-text-container">
 								<div class="small-12 columns">
 									<h5 class="rf-question-text"><?php echo $question['question']; ?></h5>
@@ -119,15 +155,16 @@
 								</div>
 								<?php endforeach; ?>
 							</div>
+							<?php endforeach; ?>
 						</div>
 					</li>
 					<?php endforeach; ?>
 			  </ul>
 			  <nav class="orbit-bullets">
-			    <button class="is-active" data-slide="0"><span class="show-for-sr">First slide details.</span><span class="show-for-sr">Current Slide</span></button>
-			    <button data-slide="1"><span class="show-for-sr">Second slide details.</span></button>
-			    <button data-slide="2"><span class="show-for-sr">Third slide details.</span></button>
-			    <button data-slide="3"><span class="show-for-sr">Fourth slide details.</span></button>
+					
+					<?php foreach($categories as $category) : ?>
+			    <button <?php if ($category['id'] == 0) : ?> class="is-active"<?php endif; ?> data-slide="<?php echo $category['id']; ?>"><span class="show-for-sr"><?php echo $category['id'] .' - '. $category['name']; ?></span></button>
+					<?php endforeach; ?>
 			  </nav>
 			</div>
 			

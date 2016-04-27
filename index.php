@@ -14,6 +14,10 @@
 		/**
 		 * The array of templates that this plugin tracks.
 		 */
+		public static $Templates;
+		/**
+		 * The array of templates that this plugin tracks.
+		 */
 		protected $templates;
 		/**
 		 * Returns an instance of this class. 
@@ -46,8 +50,9 @@
 						array( $this, 'view_project_template') 
 					);
 			// Add your templates to this array.
-			$this->templates = array(
-				'questionnaire-template.php'     => 'CB Questionnaire'
+			$this->templates = self::$Templates = array(
+				'questionnaire-template.php' => 'CB Questionnaire',
+				'questionnaire-multistep-template.php' => 'CB Questionnaire MultiStep'
 			);
 			
 
@@ -115,9 +120,14 @@
 			
 	    echo '<input type="hidden" name="questionnaire_type_meta_noncename" id="questionnaire_type_meta_noncename" value="' . wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 			
-	    echo '<select name="_questionnaire_type" class="widefat">';
-			echo '<option value="none">Please Select</option>';
-			echo '<option value="primary-questionnaire">Primary</option>';
+			echo '<select name="_questionnaire_type" class="widefat">';
+			foreach (self::$Templates as $key=>$templateName){
+				if ($questionnaire == $key){
+					echo '<option value="'.$key.'" selected="selected">'.$templateName.'</option>';
+				} else {
+					echo '<option value="'.$key.'">'.$templateName.'</option>';
+				}
+			}
 			echo '</select>';
 		}
 		
@@ -181,7 +191,7 @@
 			
 			$new_post_id = wp_insert_post( $post ); // creates page
 			
-			update_post_meta( $new_post_id, '_cb_page_template', 'questionnaire-template.php' );
+			update_post_meta( $new_post_id, '_questionnaire_type', 'questionnaire-template.php' );
 		}
 		
 		public function myplugin_deactivate() {
@@ -224,16 +234,16 @@
 		public function view_project_template( $template ) {
 			global $post;
 			if (!isset($this->templates[get_post_meta( 
-						$post->ID, '_cb_page_template', true 
+						$post->ID, '_questionnaire_type', true 
 					)] ) ) {
 					
 				return $template;
 						
 			} 
 			$file = plugin_dir_path(__FILE__). get_post_meta( 
-						$post->ID, '_cb_page_template', true 
+						$post->ID, '_questionnaire_type', true 
 					);
-				
+
 			// Just to be safe, we check if the file exist first
 			if( file_exists( $file ) ) {
 				return $file;
@@ -276,7 +286,7 @@
 				wp_enqueue_style( 'foundation-icons', 'http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' );
 				wp_enqueue_style( 'font-awesome', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css' );
 				wp_enqueue_style( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css' );
-				wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css' );
+				wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css' );
 				// wp_enqueue_style( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/introjs.min.css' );
 				wp_enqueue_style( 'cbquestionnaire-admin-css', plugins_url( '/styles/admin.css' , __FILE__ ) );
 		
@@ -284,7 +294,7 @@
 				wp_enqueue_script( 'foundation', 'http://cdnjs.cloudflare.com/ajax/libs/foundation/6.0.1/js/foundation.min.js', array('jquery'), '6.0.1', true );
 				wp_enqueue_script( 'dataTables', 'http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js', array('jquery'), '1.10.7', true );
 				wp_enqueue_script( 'foundation-dataTables', 'http://cdn.datatables.net/plug-ins/1.10.7/integration/foundation/dataTables.foundation.js', array('foundation', 'dataTables'), '1.10.7', true );
-				wp_enqueue_script( 'select2', 'http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.js', array('foundation', 'dataTables'), '4.0.1', true );
+				wp_enqueue_script( 'select2', 'http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.js', array('foundation', 'dataTables'), '4.0.2', true );
 				wp_enqueue_script( 'spectrum', 'https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js', array('foundation'), '1.8.0', true );
 				// wp_enqueue_script( 'introjs', 'https://cdnjs.cloudflare.com/ajax/libs/intro.js/1.1.1/intro.min.js', array('foundation'), '1.1.1', true );
 				wp_enqueue_script( 'sortable', 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.4.2/Sortable.min.js', array('foundation'), '1.4.2', true );

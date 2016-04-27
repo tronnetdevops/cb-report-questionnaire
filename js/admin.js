@@ -6,10 +6,16 @@
 			var $modalTemplate = $("#question-modal");
 			var $ele = $modalTemplate.data("modalRefEle");
 			var data = $modalTemplate.data("qdata");
-	
+			var categories = [];
+			
+			$modalTemplate.find("select[name=categories]").find("option:selected").each(function(){
+				categories.push( +$(this).data("category") );
+			});
+			
 			data["name"] = $modalTemplate.find("input[name=name]").val();
 			data["question"] = $modalTemplate.find("input[name=question]").val();
 			data["type"] = $modalTemplate.find("select[name=type]").val();
+			data["categories"] = categories;
 	
 			var options = [];
 		
@@ -18,14 +24,11 @@
 				var optionName = $(this).find(".option-name").val();
 				var optionDescription = $(this).find(".option-description").val();
 				var optionImage = $(this).find(".rf-option-image-url").val();
-				var optionItemsValues = $(this).find("select").val();
 				var optionItems = [];
-		
-				for(var i in optionItemsValues){
-					if(optionItemsValues.hasOwnProperty(i)) {
-						optionItems.push( +optionItemsValues[i] );
-					}
-				}
+
+				$(this).find("select.rf-question-option-points").find("option:selected").each(function(){
+					optionItems.push( +$(this).data("point") );
+				});
 		
 				options.push({
 					"name": optionName,
@@ -39,7 +42,13 @@
 			data["options"] = options;
 	
 			$ele.attr("qdata", data).text( data.name );
-	
+			
+			$("#question-"+data.id+"-categories").text( 
+				data.categories.map(function(id){
+					return rf.data.categories[ +id ].text;
+				}).join(", ")
+			);
+			
 			rf.data.questions[ data.id ] = data;
 	
 			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
@@ -131,6 +140,7 @@
 					"name": "New Question",
 					"question": "Put your question text here...",
 					"type": "multiselect", 
+					"categories": [],
 					"options": {}
 				};
 			}
@@ -138,6 +148,9 @@
 			dt.row.add([
 				'<div class="question-id-container-'+data.id+'" data-pos="'+data.id+'">'+data.id+'</div>', 
 				'<a href="javascript:void(0);" data-toggle="question-modal" class="question-'+data.id+' question-data-container" onclick="javascript:rf.loadEditModalData(this)">'+data.name+'</a>', 
+				'<div id="question-'+data.id+'-categories">'+data.categories.map(function(id){
+					return rf.data.categories[ id ].text;
+				}).join(", ")+'</div>', 
 				'<a href="javascript:void(0);" data-toggle="question-modal-delete" class="question-control-delete-'+data.id+'" onclick="javascript:rf.loadDeleteModalData(this)"><i class="fa fa-trash"></i> Delete</a>'
 			]).draw(false);
 	
@@ -173,7 +186,7 @@
 						+'<div class="small-12 columns">'
 							+'<div class="">'
 								+'<label>Points'
-									+'<select style="width: 100%" multiple="multiple" class="rf-question-option-points"></select>'
+									+'<select style="width: 100%" multiple="multiple" name="points" class="rf-question-option-points"></select>'
 								+'</label>'
 							+'</div>'
 						+'</div>'
@@ -184,7 +197,6 @@
 							+'<label>Image'
 								+'<input type="text" name="image_url" style="width: 100%" class="regular-text rf-option-image-url">'
 							+'</label>'
-
 						+'</div>'
 						+'<div class="small-6 columns">'
 							+'<input type="button" name="upload-btn" class="button-secondary rf-option-image-upload-btn" value="Upload Image">'						+'</div>'
@@ -244,53 +256,44 @@
 			
 			$optionTemplate.find(".rf-option-image-display").on("error", function(){
 				$(this).addClass("failed-image");
-			})
+			});
+			
+			var selectData = [];
+	
+			for(var pos in rf.data.results){
+				var option = $.extend({}, rf.data.results[+pos]);
+				
+				console.log("looking for "+pos)
+				console.log(data.results);
+				if (data.results.indexOf( +pos ) !== -1){
+					option.selected = true;
+				}
+		
+				selectData.push(option);
+			}
 	
 			$optionTemplate.find("select").select2({
 				"tags": true,
 				"placeholder": "Start typing name of points...",
-				"data": selectData
-			}).on("change", function(e) {
-				var selectedItems = $(e.target).val() || [];
-				var newItems = [];
-		
-				if (rf.data.results){
-					var dataValues = rf.data.results.map(function(v,i){ return v.text; });
-				} else {
-					var dataValues = [];
-				}
-		
-				for(var id in selectedItems){
-					var result = selectedItems[ id ];
-			
-					/**
-					 * Numeric most likely means this is an ID and not a new entry.
-					 * Could be problematic in the case of a new entry that is actually just a number...
-					 */
-					if ($.isNumeric(result)){
-						continue;
-					}
-			
-					if (dataValues.indexOf( result ) === -1){
-						var newID = rf.data.results.length + newItems.length;
-						newItems.push({
-							"text": result,
-							"id": newID
+				"data": selectData,
+				"templateSelection": function(data){
+					var match = rf.data.results.filter(function(result){ return result.text == data.text; });
+					
+					if (match.length){
+						var id = match[0].id;
+					} else {
+						var id = rf.data.results.length;
+						
+						rf.data.results.push({
+							"text": data.text,
+							"id": id
 						});
-				
-						$(this).find('option[value="'+result+'"]').attr("value", newID);
 					}
+					
+					$(data.element).data("point", id);
+					
+					return data.text;
 				}
-		
-				$.merge(rf.data.results, newItems);
-		
-				/**
-				 * Reapplying the ID may cause issues...
-				 */
-				for(var pos in rf.data.results){
-					rf.data.results[ pos ].id = pos;
-				}
-		
 			});
 	
 			return $optionTemplate;
@@ -309,6 +312,46 @@
 			$modalTemplate.find("input[name=name]").val(data.name);
 			$modalTemplate.find("input[name=question]").val(data.question);
 			$modalTemplate.find("select[name=type]").val(data.type);
+			
+			var selectData = [];
+	
+			for(var pos in rf.data.categories){
+				var category = $.extend({}, rf.data.categories[+pos] );
+				
+				if (data.categories.indexOf( +pos ) !== -1){
+					category.selected = true;
+				}
+		
+				selectData.push(category);
+			}
+			
+			$modalTemplate.find("#rf-question-category").val(null).on("focus", function(e){
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				$(this).siblings(".select2-container").find("input.select2-search__field").focus();
+			}).select2({
+				"tags": true,
+				"placeholder": "Start typing name of categories...",
+				"data": selectData,
+				"templateSelection": function(data){
+					var match = rf.data.categories.filter(function(category){ return category.text == data.text; });
+					
+					if (match.length){
+						var id = match[0].id;
+					} else {
+						var id = rf.data.categories.length;
+						
+						rf.data.categories.push({
+							"text": data.text,
+							"id": id
+						});
+					}
+					
+					$(data.element).data("category", id);
+					
+					return data.text;
+				}
+			});
 	
 			for(var id in data.options){
 				var option = data.options[id];

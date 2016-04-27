@@ -19,30 +19,9 @@
 				)
 			)
 		),
-		
-		'results' => array(
-			array(
-				'text' => 'Default',
-				'id' => 0
-			)
-		),
-		
-		'questions' => array(
-			array(
-				'id' => 0,
-				'name' => 'First Question',
-				'question' => 'Put your question here...',
-				'type' => 'multiselect',
-				'options' => array(
-					array(
-						'id' => 0,
-						'name' => 'First Option',
-						'description' => '',
-						'results' => array(0)
-					)
-				)
-			)
-		)
+		'categories' => array(),
+		'results' => array(),
+		'questions' => array()
 	);
 
 	$defaultJSONData = json_encode( $defaultData );
@@ -85,7 +64,8 @@
 					<thead>
 						<tr>
 							<th width="5%">ID</th>
-							<th width="80%">Name</th>
+							<th width="70%">Name</th>
+							<th width="10%">Categories</th>
 							<th>Actions</th>
 						</tr>
 					</thead>
@@ -175,7 +155,7 @@
 						</label>
 					</div>
 				</div>
-			</div>		
+			</div>
 		
 			<hr/>
 		
@@ -227,6 +207,12 @@
 						<option value="radio">Single</option>
 						<option value="multiselect">Multiple</option>
 					</select>
+				</label>
+			</div>
+			
+			<div class="category-field">
+				<label>Category
+					<select style="width: 100%;" class="js-example-tags form-control select2-hidden-accessible" multiple="multiple" name="categories" id="rf-question-category"></select>
 				</label>
 			</div>
 		
