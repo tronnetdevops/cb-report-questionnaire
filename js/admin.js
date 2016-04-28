@@ -208,7 +208,7 @@
 			
 					+'<div class="">'
 						+'<hr/>'
-						+'<button type="button" class="button primary right"  data-toggle="question-option-modal-delete" onclick="javascript:rf.loadDeleteOptionModalData(this);"><i class="fa fa-trash"></i> Delete</button>'
+						+'<button type="button" class="button alert right"  data-toggle="question-option-modal-delete" onclick="javascript:rf.loadDeleteOptionModalData(this);"><i class="fa fa-trash"></i> Delete</button>'
 						+'<br/>'
 					+'</div>'
 				+'</div>'
