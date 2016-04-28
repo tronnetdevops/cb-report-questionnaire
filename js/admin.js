@@ -186,7 +186,7 @@
 						+'<div class="small-12 columns">'
 							+'<div class="">'
 								+'<label>Points'
-									+'<select style="width: 100%" multiple="multiple" name="points" class="rf-question-option-points"></select>'
+									+'<select style="width: 100%" multiple="multiple" name="points" class="rf-question-option-points js-example-tags form-control select2-hidden-accessible"></select>'
 								+'</label>'
 							+'</div>'
 						+'</div>'
@@ -199,7 +199,8 @@
 							+'</label>'
 						+'</div>'
 						+'<div class="small-6 columns">'
-							+'<input type="button" name="upload-btn" class="button-secondary rf-option-image-upload-btn" value="Upload Image">'						+'</div>'
+							+'<input type="button" name="upload-btn" class="button-secondary rf-option-image-upload-btn" value="Upload Image">'
+						+'</div>'
 						+'<div class="small-6 columns">'
 							+'<img src="" class="thumbnail rf-option-image-display"/>'
 						+'</div>'
@@ -263,8 +264,6 @@
 			for(var pos in rf.data.results){
 				var option = $.extend({}, rf.data.results[+pos]);
 				
-				console.log("looking for "+pos)
-				console.log(data.results);
 				if (data.results.indexOf( +pos ) !== -1){
 					option.selected = true;
 				}
@@ -272,7 +271,11 @@
 				selectData.push(option);
 			}
 	
-			$optionTemplate.find("select").select2({
+			$optionTemplate.find("select").val(null).on("focus", function(e){
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				$(this).siblings(".select2-container").find("input.select2-search__field").focus();
+			}).select2({
 				"tags": true,
 				"placeholder": "Start typing name of points...",
 				"data": selectData,
