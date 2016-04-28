@@ -215,6 +215,8 @@
 					<select style="width: 100%;" class="js-example-tags form-control select2-hidden-accessible" multiple="multiple" name="categories" id="rf-question-category"></select>
 				</label>
 			</div>
+			
+			<br/>
 		
 			<button class="button tiny primary right" type="button" onclick="javascript:rf.addQuestionOption(this);"><i class="fa fa-plus"></i> Add Option</button>
 		
