@@ -90,7 +90,7 @@
 	
 	<div class="row">
 		<div class="large-3 columns">
-			<div class="rf-options-container" style="z-index: 100;">
+			<div class="rf-options-container rf-scroll-follow" style="z-index: 100;">
 				<div class="rf-option-lead row">
 					<div class="small-12 columns">
 						<strong>How many times your information has been exposed to hackers</strong>
@@ -107,7 +107,7 @@
 		
 		<div class="large-9 columns">
 			<div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit data-auto-play="false" data-use-m-u-i="false">
-				<ul class="orbit-container" style="padding-left: 3em;padding-right: 3em;">
+				<ul class="orbit-container" style="padding-left: 3.5em;padding-right: 3.5em;">
 					<button class="orbit-previous"><span class="show-for-sr">Previous Slide</span>&#9664;&#xFE0E;</button>
 					<button class="orbit-next"><span class="show-for-sr">Next Slide</span>&#9654;&#xFE0E;</button>
 					<?php
@@ -157,21 +157,23 @@
 							</div>
 							<?php endforeach; ?>
 						</div>
+						
+						<?php if (($index-1) == count($categories)) : ?>
+						<div class="row">
+							<div class="large-12 columns">
+								<?php echo nl2br($bottomText); ?>
+							</div>
+						</div>
+						<?php endif; ?>
 					</li>
 					<?php endforeach; ?>
 			  </ul>
 			  <nav class="orbit-bullets">
 					
 					<?php foreach($categories as $category) : ?>
-			    <button <?php if ($category['id'] == 0) : ?> class="is-active"<?php endif; ?> data-slide="<?php echo $category['id']; ?>"><span class="show-for-sr"><?php echo $category['id'] .' - '. $category['name']; ?></span></button>
+			    <button <?php if ($category['id'] == 0) : ?> class="is-active"<?php endif; ?> data-slide="<?php echo $category['id']; ?>" style="background: none;"> <i class="fa fa-arrow-right"></i><span class="show-for-sr"><?php echo $category['id'] .' - '. $category['name']; ?></span></button>
 					<?php endforeach; ?>
 			  </nav>
-			</div>
-			
-			<div class="row">
-				<div class="large-12 columns">
-					<?php echo nl2br($bottomText); ?>
-				</div>
 			</div>
 		</div>
 	</div>
