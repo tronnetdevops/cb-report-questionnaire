@@ -48,13 +48,14 @@
 		<input type="hidden" name="_questionnaire_json_data" id="rf-questionnaire-json-data" value="<?php echo esc_attr( $dashboardJSONData ); ?>" />
 	
 		<div class="row">
-			<div class="small-6 columns">
+			<div class="small-4 columns">
 			
 				<h4>Questions</h4>
 			</div>
-			<div class="small-6 columns rf-gt-main-control-buttons">
+			<div class="small-8 columns rf-gt-main-control-buttons">
 				<button type="button" class="button tiny right primary" onclick="javascript:rf.addQuestion();"><i class="fa fa-plus"></i> Add Question</button>
 				<button type="button" class="button tiny right primary" onclick="javascript:rf.loadQuestionOrderModalData()" data-toggle="question-order-modal"><i class="fa fa-sort-amount-asc"></i> Question Order</button>
+				<button type="button" class="button tiny right primary" onclick="javascript:rf.loadResultsManagementModalData()" data-toggle="result-management-modal"><i class="fa fa-check-circle-o"></i> Manage Points</button>
 				<button type="button" class="button tiny right primary" data-toggle="settings-modal"><i class="fa fa-gears"></i> Manage Settings</button>
 			</div>
 		</div>
@@ -229,6 +230,20 @@
 			<hr/>
 		
 			<button class="button tiny primary right" type="button" onclick="javascript: rf.questionBuilder(this);"><i class="fa fa-save"></i> Submit</button>
+		
+			<button class="close-button" data-close aria-label="Close reveal" type="button">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+
+		<div id="result-management-modal" class="reveal" data-reveal>
+			<h2 class="title">Points Management</h2>
+
+			<form onsubmit="return false;">
+				<div class="row" id="results-management-modal-points-container"></div>
+			</form>
+		
+			<button class="button tiny right" type="button" onclick="javascript: rf.setResultsManagement(this);" data-toggle="result-management-modal"><i class="fa fa-save"></i> Submit</button>
 		
 			<button class="close-button" data-close aria-label="Close reveal" type="button">
 				<span aria-hidden="true">&times;</span>

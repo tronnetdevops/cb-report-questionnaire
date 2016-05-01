@@ -371,6 +371,144 @@
 	
 			return true;
 		},
+		
+		"loadResultsManagementModalData": function(){
+			var $modalTemplate = $("#result-management-modal");
+			var $pointContainer = $modalTemplate.find("#results-management-modal-points-container");
+			var pointsDOM = rf.data.results.map(function(point){
+				return '<li class="row">'
+					+'<div class="small-9 columns rf-results-management-point-item" data-point="'+point.id+'">'
+						+'<a href="javascript:void(0);">'+point.text+'</a>'
+						+'<input name="pointName" value="'+point.text+'" class="hide rf-results-management-point-name"/>'
+						+'<button name="pointSave" class="hide button primary tiny rf-results-management-point-name-save"><i class="fa fa-save"></i> Save</button>'
+					+'</div>'
+					+'<div class="small-3 columns rf-results-management-point-delete" data-point="'+point.id+'">'
+						+'<a href="javascript:void(0);"><i class="fa fa-trash"></i> Delete</a>'
+					+'</div>'
+				+'</li>';
+			}).join('');
+			
+			pointsDOM = '<ul>'+pointsDOM+'</ul>';
+			
+			$modalTemplate.find("form").on("submit", function(){
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			});
+			
+			$pointContainer.html( pointsDOM );
+
+			$pointContainer.find(".rf-results-management-point-item a").on("click", function(){
+				$(this).toggleClass("hide").siblings("input,button").toggleClass("hide");
+			});
+			
+			$pointContainer.find(".rf-results-management-point-name-save").on("click", function(e){
+				$(this).siblings("input").trigger("blur");
+			});
+			
+			$pointContainer.find(".rf-results-management-point-item input").on("submit", function(e){
+				e.preventDefault();
+				e.stopImmediatePropagation();
+			});
+			
+			$pointContainer.find(".rf-results-management-point-item input").on("blur", function(){
+				$(this).toggleClass("hide").siblings("button").toggleClass("hide").siblings("a").text( $(this).val() ).toggleClass("hide");
+			});
+						
+			$pointContainer.find(".rf-results-management-point-delete a").on("click", function(){
+				var id = $(this).parent().data("point");
+				
+				rf.data.questions.map(function(question){
+					question.options.map(function(option){
+						var existingResultPos = option.results.indexOf( option.id );
+						if (existingResultPos !== -1){
+							option.results.splice(existingResultPos, 1);
+						}
+						
+						return option;
+					});
+					
+					return question;
+				});
+				
+				$(this).parent().parent().remove();
+			});
+			
+		},
+		
+		"setResultsManagement": function(ele){
+			var $modalTemplate = $("#result-management-modal");
+			var $rftable = $(".rf-questionnaire-questions");
+			var dt = $rftable.DataTable();
+			
+			var $pointContainer = $modalTemplate.find("#results-management-modal-points-container");
+			var newResultSet = [];
+			var questionsIDsInOrder = $pointContainer.find(".rf-results-management-point-item").each(function(){
+				var result = rf.data.results[ +$(this).data("point") ];
+				
+				result.text = $(this).find("input").val();
+				
+				newResultSet.push( result );
+			});
+			
+			var questionResultsMap = {};
+			newResultSet.map(function(result, newID){
+				rf.data.questions.map(function(question){
+					question.options.map(function(option){
+						var existingResultPos = option.results.indexOf( option.id );
+						if (existingResultPos !== -1){
+							if (!questionResultsMap[ question.id ]){
+								questionResultsMap[ question.id ] = {
+									"options": {}
+								}
+							}
+							
+							if (!questionResultsMap[ question.id ].options[ option.id ]){
+								questionResultsMap[ question.id ].options[ option.id ] = {
+									"add": []
+								}
+							}
+						
+							option.results.splice(existingResultPos, 1);
+							questionResultsMap[ question.id ].options[ option.id ].add.push( newID );
+						}
+						
+						return option;
+					});
+					
+					return question;
+				});
+				
+				result['id'] = newID;
+				
+				return result;
+			});
+			
+			for(var qid in questionResultsMap){
+				for(var oid in questionResultsMap[ qid ].options){
+					$.merge(rf.data.questions[ qid ].options[ oid ].results, questionResultsMap[ qid ].options[ oid ].add)
+				}
+			}
+			
+			newResultSet.map(function(result, newID){
+				result['id'] = newID;
+				return result;
+			});
+			
+			rf.data.results = newResultSet;
+			
+			$("#rf-questionnaire-json-data").val( JSON.stringify(rf.data) );
+
+			dt.clear().draw();
+			
+			for(var id in rf.data.questions){
+				var qdata = rf.data.questions[id];
+				rf.addQuestion(qdata);
+			}
+			
+			return true;
+		},
+		
 		"loadQuestionOrderModalData": function(){
 			var $modalTemplate = $("#question-order-modal");
 			var $questionContainer = $modalTemplate.find("#question-order-modal-questions-container");
@@ -406,7 +544,6 @@
 				var qdata = rf.data.questions[id];
 				rf.addQuestion(qdata);
 			}
-			
 			
 			return true;
 		},
